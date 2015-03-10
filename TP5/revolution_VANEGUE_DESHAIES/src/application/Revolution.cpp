@@ -23,70 +23,90 @@ Revolution::Revolution() {
 
 
 void Revolution::initSphere() {
-  vector<float> p;
-  vector<float> n;
-  vector<float> t;
+    vector<float> p;
+    vector<float> n;
+    vector<float> t;
+    vector<unsigned int> index;
 
-  vector<unsigned int> index;
+    int nbSlice=20;
+    // include last slice that closes sphere
+    int nbStack=20;
 
-  int nbSlice=20; // include last slice that closes sphere
-  int nbStack=20;
+    double theta = (2 * M_PI) / nbSlice;
+    double phi = M_PI / nbStack;
 
-  float theta = (2 * M_PI) / nbSlice;
-  float sigma = M_PI / nbStack;
-
-  // *******
-
-  for(int i=0;i<=nbStack;i++){
-      for(int j=0;j<=nbSlice;j++){
-        p.push_back(cos(theta*j)*sin(sigma*i));
-        p.push_back(cos(sigma*i));
-        p.push_back(sin(theta*j)*sin(sigma*i));
-      }
-  }
-
-  for(int i=0;i<=((nbSlice+1)*(nbStack+1));i++){
-
-    if(i>=1)
-        index.push_back(i-1);
-    else
-        index.push_back(0);
-
-    if(i+21<(nbSlice+1)*(nbStack+1))
-        index.push_back(i+21);
-    else
-        index.push_back((nbSlice+1)*(nbStack+1)-1);
-
-    if(i+20<(nbSlice+1)*(nbStack+1))
-        index.push_back(i+20);
-    else
-        index.push_back((nbSlice+1)*(nbStack+1)-1);
+    double s = theta / (2 * M_PI);
+    double ta = phi / M_PI;
 
 
-    if(i>=20)
-        index.push_back(i-20);
-    else
-        index.push_back(0);
+    // ******* // TODO
+    for(int i=0; i<=nbSlice; i++) {
+        for(int j=1; j<=nbStack; j++) {
+            double x = cos(theta * (double)j) * sin(phi * (double)i);
+            double y = cos(phi * (double)i);
+            double z = sin(theta * (double)j) * sin(phi * (double)i);
 
-    if(i>=21)
-        index.push_back(i-21);
-    else
-        index.push_back(0);
+            p.push_back(x);
+            p.push_back(y);
+            p.push_back(z);
 
-    if(i+1<(nbSlice+1)*(nbStack+1))
-        index.push_back(i+1);
-    else
-        index.push_back((nbSlice+1)*(nbStack+1)-1);
-  }
-  // *******
+        }
+    }
+
+    for(int i=0; i<=nbSlice; i++) {
+        for(int j=1; j<=nbStack; j++) {
+
+            int hg=0;
+            int hd=0;
+            int bg=0;
+            int bd=0;
+
+            if(i==19){
+                hg = j * nbStack + i ;
+                hd = j * nbStack + i + 1 -20;
+                bg = (j-1) * nbStack + i ;
+                bd = (j-1) * nbStack + i + 1 - 20;
+
+                t.push_back(s*nbSlice - s*j);
+                t.push_back(0);
+
+            }else{
+                hg = j * nbStack + i;
+                hd = j * nbStack + i + 1;
+                bg = (j-1) * nbStack + i;
+                bd = (j-1) * nbStack + i + 1;
+
+                t.push_back(s*nbSlice - s*j);
+                t.push_back(ta*nbStack - ta*i);
+            }
+
+            cout << " hg = " << hg;
+            cout << " hd = " << hd;
+            cout << " bg = " << bg;
+            cout << " bd = " << bd << endl;
 
 
+            index.push_back(hg);
+            index.push_back(bg);
+            index.push_back(bd);
+            index.push_back(bd);
+            index.push_back(hd);
+            index.push_back(hg);
 
+            float x=cos(theta*j)*sin(phi*i);
+            float y=cos(phi*i);
+            float z=sin(theta*j)*sin(phi*i);
 
-  initVAO(index,p,n,t);
+            n.push_back(sqrt(x*x+y*y+z*z));
+            n.push_back(sqrt(x*x+y*y+z*z));
+            n.push_back(sqrt(x*x+y*y+z*z));
 
-  _texture=&_earth;
+        }
+    }
+    // *******
 
+    initVAO(index,p,n,t);
+    _texture=&_earth;
 }
 
 
@@ -100,7 +120,512 @@ void Revolution::initCube() {
   // *******
   //  TODO
 
+  /* // q1
 
+      for(int x=-1; x<=1; x+=2) {
+          for(int y=-1; y<=1; y+=2) {
+              for(int z=-1; z<=1; z+=2) {
+                    p.push_back(x);
+                    p.push_back(y);
+                    p.push_back(z);
+                }
+            }
+        }
+
+
+    //face 1
+    index.push_back(2);
+    index.push_back(0);
+    index.push_back(6);
+    index.push_back(6);
+    index.push_back(0);
+    index.push_back(4);
+
+    //face 2
+    index.push_back(2);
+    index.push_back(0);
+    index.push_back(3);
+    index.push_back(3);
+    index.push_back(0);
+    index.push_back(1);
+
+    //face 3
+    index.push_back(3);
+    index.push_back(7);
+    index.push_back(1);
+    index.push_back(1);
+    index.push_back(7);
+    index.push_back(5);
+
+    //face 4
+    index.push_back(1);
+    index.push_back(0);
+    index.push_back(5);
+    index.push_back(5);
+    index.push_back(0);
+    index.push_back(4);
+
+    //face 5
+    index.push_back(5);
+    index.push_back(4);
+    index.push_back(7);
+    index.push_back(7);
+    index.push_back(4);
+    index.push_back(6);
+
+    //face 6
+    index.push_back(6);
+    index.push_back(7);
+    index.push_back(2);
+    index.push_back(2);
+    index.push_back(7);
+    index.push_back(3);
+
+    */
+
+  // q2 et q3
+
+
+  //Face
+
+  //Triangle 1
+
+  //1
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(0);
+  t.push_back(0.33);
+  t.push_back(1);
+
+  //2
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(1);
+  t.push_back(0);
+  t.push_back(1);
+
+  //3
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(2);
+  t.push_back(0);
+  t.push_back(0.5);
+
+
+  //Triangle 2
+  //3
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(3);
+  t.push_back(0);
+  t.push_back(0.5);
+
+  //2
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(4);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //1
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(1);
+  index.push_back(5);
+  t.push_back(0.33);
+  t.push_back(1);
+
+  //Face Droit
+
+  //Triangle 1
+
+  //1
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(6);
+  t.push_back(0.66);
+  t.push_back(0.5);
+
+  //2
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(7);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //3
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(8);
+  t.push_back(0.66);
+  t.push_back(0);
+
+  //Triangle 2
+
+  //3
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(9);
+  t.push_back(0.66);
+  t.push_back(0);
+
+  //2
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(10);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //1
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(11);
+  t.push_back(0.33);
+  t.push_back(0);
+
+
+
+
+  //Face Dessus
+
+  //Triangle 1
+
+  //1
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(12);
+  t.push_back(1);
+  t.push_back(1);
+
+  //2
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(13);
+  t.push_back(0.66);
+  t.push_back(1);
+
+  //3
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(14);
+  t.push_back(1);
+  t.push_back(0.5);
+
+  //Triangle 2
+
+  //3
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(15);
+  t.push_back(1);
+  t.push_back(0.5);
+
+  //2
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(16);
+  t.push_back(0.66);
+  t.push_back(1);
+
+  //1
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(1);
+  n.push_back(0);
+  index.push_back(17);
+  t.push_back(0.66);
+  t.push_back(0.5);
+
+
+  //Arriere Fond
+
+  //Triangle 1
+
+  //1
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(18);
+  t.push_back(0.66);
+  t.push_back(0.5);
+
+  //2
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(19);
+  t.push_back(1);
+  t.push_back(0.5);
+
+  //3
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(20);
+  t.push_back(0.66);
+  t.push_back(0);
+
+  //Triangle 2
+
+  //3
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(21);
+  t.push_back(0.66);
+  t.push_back(0);
+
+  //2
+  p.push_back(1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(22);
+  t.push_back(1);
+  t.push_back(0.5);
+
+  //1
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  n.push_back(-1);
+  index.push_back(23);
+  t.push_back(1);
+  t.push_back(0);
+
+
+
+
+  //Arriere Gauche
+
+  //Triangle 1
+
+  //1
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(-1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(24);
+  t.push_back(0.33);
+  t.push_back(1);
+
+  //2
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(25);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //3
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(26);
+  t.push_back(0.66);
+  t.push_back(1);
+
+  //Triangle 2
+
+  //3
+  p.push_back(-1);
+  p.push_back(1);
+  p.push_back(1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(27);
+  t.push_back(0.66);
+  t.push_back(1);
+
+  //2
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(28);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //1
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(-1);
+  n.push_back(0);
+  n.push_back(0);
+  index.push_back(29);
+  t.push_back(0.66);
+  t.push_back(0.5);
+
+
+  //Arriere Base
+
+  //Triangle 1
+
+  //1
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(30);
+  t.push_back(0.33);
+  t.push_back(0.5);
+
+  //2
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(31);
+  t.push_back(0.33);
+  t.push_back(0);
+
+  //3
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(32);
+  t.push_back(0);
+  t.push_back(0.5);
+
+
+  //Triangle 2
+
+  //3
+  p.push_back(1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(33);
+  t.push_back(0.33);
+  t.push_back(0);
+
+  //2
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(34);
+  t.push_back(0);
+  t.push_back(0);
+
+  //1
+  p.push_back(-1);
+  p.push_back(-1);
+  p.push_back(-1);
+  n.push_back(0);
+  n.push_back(-1);
+  n.push_back(0);
+  index.push_back(35);
+  t.push_back(0);
+  t.push_back(0.5);
 
 
   // *******
