@@ -84,6 +84,23 @@ void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, doubl
   // quelle est la distance de recouvrement ? (*distance = ??)
   // affecter correctement *direction (-1 ou 1 ?)
 
+  if( d2 < f1 && d1 < f2 ){
+      dist = abs(d2-f1);
+  }else if(f2 < d1){
+      dist = abs(d1-f2);
+  }else{
+      dist = abs(f2-d1);
+  }
+
+  *distance = dist;
+
+
+  //affectation correcte de direction
+  if ( f2+d2 < f1+d1 ){
+      *direction = -1;
+  }else{
+      *direction = 1;
+  }
 
 }
 
