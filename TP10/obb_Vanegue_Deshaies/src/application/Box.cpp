@@ -71,38 +71,42 @@ void Box::project(const Vector3 &axe,double *mini,double *maxi) const {
 **/
 
 void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, double *direction) {
-  double min1,min2,max1,max2;
-  double dist;
-  b1->project(axe,&min1,&max1);
-  b2->project(axe,&min2,&max2);
+      double d1,d2,f1,f2;
 
-  drawDebugProject(b1,b2,axe,min1,max1,min2,max2);
+      b1->project(axe,&d1,&f1);
+      b2->project(axe,&d2,&f2);
 
-// A completer
-  // d1,f1 : intervalle de projection pour la boite b1
-  // d2,f2 : intervalle de projection pour la boite b2
-  // quelle est la distance de recouvrement ? (*distance = ??)
-  // affecter correctement *direction (-1 ou 1 ?)
+      drawDebugProject(b1,b2,axe,d1,f1,d2,f2);
+
+    // A completer
+      // d1,f1 : intervalle de projection pour la boite b1
+      // d2,f2 : intervalle de projection pour la boite b2
+      // quelle est la distance de recouvrement ? (*distance = ??)
+      // affecter correctement *direction (-1 ou 1 ?)
+
+      if (d2 < f1 && d1 < f2){
+         *distance=min(d2-f1,d1-f2);
+          cout << "1" << endl;
+      }
+      else {
+          if (d1 < d2){
+              *distance=abs(d2-f1);
+              cout << "2" << endl;
+          }else{
+              *distance=abs(f2-d1);
+              cout << "3" << endl;
+          }
+      }
 
 
 
-  if( min2 < min1 && max2 > max1){
-      dist = min1-max1;
-  }else if(max2 > max1){
-      dist = min2-max1;
-  }else{
-      dist = min1-max2;
-  }
-
-  *distance = dist;
-
-
-  //affectation correcte de direction
-  if ( abs(min1-min2) > abs(max2-max1) ){
-      *direction = 1;
-  }else{
-      *direction = -1;
-  }
+      if ( ((f2-d2)/2 + d2) < ((f1-d1/2)+d1) ){
+          //Si b2 est à gauche de b1
+          *direction = -0.3;
+      }
+      else{
+          *direction = 0.3;
+      }
 
 }
 
@@ -142,18 +146,17 @@ bool Box::detectCollision(Box *b1,Box *b2,CollisionInfo *collision) {
   //   b2 par rapport à b1 (i.e. multiplier axis[i] par le signe (-1 ou 1) retourné par la méthode distance(b1,b2,...,)).
   // - assurez vous d'avoir affecté correctement detect à la fin (==true il y a collision, == false pas de collision).
 
-    dist_min = 42;
+  dist_min = 42;
 
-    for (int i = 0; i < 4; i++) {
 
+  for (int i = 0; i < 4; i++) {
       distance(b1,b2,axis[i],&dist,&direction);
 
-      if ( abs(dist) < abs(dist_min) ) {
+      if (abs(dist) < abs(dist_min)) {
           dist_min = dist;
           axe_min = axis[i]*direction;
       }
-
-    }
+  }
 
 
    // affectation de detect

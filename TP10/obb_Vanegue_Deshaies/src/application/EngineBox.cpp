@@ -27,7 +27,7 @@ void EngineBox::computeForce() {
     Box *b=_boxList->at(i);
 
     // A compléter
-    double coef = 0.75;
+    double coef = 0.5;
     b->addForce( Vector3(0,-1,0)* b->mass() * 9.81);
     b->addForce(-1*coef*b->velocity());
     b->addMoment(-1*coef*b->omega());
