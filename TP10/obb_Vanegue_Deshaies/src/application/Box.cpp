@@ -71,12 +71,12 @@ void Box::project(const Vector3 &axe,double *mini,double *maxi) const {
 **/
 
 void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, double *direction) {
-  double d1,d2,f1,f2;
+  double min1,min2,max1,max2;
   double dist;
-  b1->project(axe,&d1,&f1);
-  b2->project(axe,&d2,&f2);
+  b1->project(axe,&min1,&max1);
+  b2->project(axe,&min2,&max2);
 
-  drawDebugProject(b1,b2,axe,d1,f1,d2,f2);
+  drawDebugProject(b1,b2,axe,min1,max1,min2,max2);
 
 // A completer
   // d1,f1 : intervalle de projection pour la boite b1
@@ -84,22 +84,24 @@ void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, doubl
   // quelle est la distance de recouvrement ? (*distance = ??)
   // affecter correctement *direction (-1 ou 1 ?)
 
-  if( d2 < f1 && d1 < f2 ){
-      dist = abs(d2-f1);
-  }else if(f2 < d1){
-      dist = abs(d1-f2);
+
+
+  if( min2 < min1 && max2 > max1){
+      dist = min1-max1;
+  }else if(max2 > max1){
+      dist = min2-max1;
   }else{
-      dist = abs(f2-d1);
+      dist = min1-max2;
   }
 
   *distance = dist;
 
 
   //affectation correcte de direction
-  if ( f2+d2 < f1+d1 ){
-      *direction = -1;
-  }else{
+  if ( abs(min1-min2) > abs(max2-max1) ){
       *direction = 1;
+  }else{
+      *direction = -1;
   }
 
 }
@@ -140,9 +142,32 @@ bool Box::detectCollision(Box *b1,Box *b2,CollisionInfo *collision) {
   //   b2 par rapport à b1 (i.e. multiplier axis[i] par le signe (-1 ou 1) retourné par la méthode distance(b1,b2,...,)).
   // - assurez vous d'avoir affecté correctement detect à la fin (==true il y a collision, == false pas de collision).
 
-  distance(b1,b2,axis[0],&dist,&direction);
-  if (dist<0) p3d::addDebug(b1->position(),b1->position()-direction*dist*axis[0],"",Vector3(0.2,0.2,1));
-  detect=false; // force une non détection (à enlever lorsque la détection est implémentée...).
+    dist_min = 42;
+
+    for (int i = 0; i < 4; i++) {
+
+      distance(b1,b2,axis[i],&dist,&direction);
+
+      if ( abs(dist) < abs(dist_min) ) {
+          dist_min = dist;
+          axe_min = axis[i]*direction;
+      }
+
+    }
+
+
+   // affectation de detect
+   if (dist_min < 0)  {
+       cout << "collision" << endl;
+       detect = true;
+   }else{
+        cout << "pas de collision" << endl;
+        detect = false;
+   }
+
+
+
+
 
   // affecter les informations nécessaires à la réponse
   if (detect) {
