@@ -85,16 +85,12 @@ void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, doubl
       // affecter correctement *direction (-1 ou 1 ?)
 
       if (d2 < f1 && d1 < f2){
-         *distance=min(d2-f1,d1-f2);
-          cout << "1" << endl;
-      }
-      else {
+         *distance=min( d2-f1, d1-f2 );
+      }else {
           if (d1 < d2){
-              *distance=abs(d2-f1);
-              cout << "2" << endl;
+              *distance=abs(f1-d2);
           }else{
               *distance=abs(f2-d1);
-              cout << "3" << endl;
           }
       }
 
@@ -102,10 +98,10 @@ void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, doubl
 
       if ( ((f2-d2)/2 + d2) < ((f1-d1/2)+d1) ){
           //Si b2 est à gauche de b1
-          *direction = -0.3;
+          *direction = -0.1;
       }
       else{
-          *direction = 0.3;
+          *direction = 0.1;
       }
 
 }
@@ -123,7 +119,7 @@ void Box::distance(Box *b1, Box *b2, const Vector3 &axe, double *distance, doubl
 **/
 bool Box::detectCollision(Box *b1,Box *b2,CollisionInfo *collision) {
   double dist;
-  double dist_min;
+  double dist_min = 42;
 
 
   Vector3 axis[4]; // 4 axes à tester
@@ -138,7 +134,7 @@ bool Box::detectCollision(Box *b1,Box *b2,CollisionInfo *collision) {
   axis[2]=b2->directionX(); // axe x de b2
   axis[3]=b2->directionY(); // axe y de b2
 
-  bool detect;
+  bool detect=true;
 
   // A completer (1 seul axe pour l'instant => il faut tenir compte des 4 axes) :
   // - déterminez la distance minimale dist_min de recouvrement entre les 4 axes axis[i] qui sont non séparateurs (Attention : minimale en valeur absolue !, mais dist_min est négative s'il y a recouvrement)
@@ -146,29 +142,19 @@ bool Box::detectCollision(Box *b1,Box *b2,CollisionInfo *collision) {
   //   b2 par rapport à b1 (i.e. multiplier axis[i] par le signe (-1 ou 1) retourné par la méthode distance(b1,b2,...,)).
   // - assurez vous d'avoir affecté correctement detect à la fin (==true il y a collision, == false pas de collision).
 
-  dist_min = 42;
 
+   for (int i = 0; i < 4; i++) {
+        distance(b1,b2,axis[i],&dist,&direction);
 
-  for (int i = 0; i < 4; i++) {
-      distance(b1,b2,axis[i],&dist,&direction);
+        if (abs(dist) < abs(dist_min)) {
+              dist_min = dist;
+              axe_min = axis[i]*direction;
+        }
 
-      if (abs(dist) < abs(dist_min)) {
-          dist_min = dist;
-          axe_min = axis[i]*direction;
-      }
-  }
-
-
-   // affectation de detect
-   if (dist_min < 0)  {
-       cout << "collision" << endl;
-       detect = true;
-   }else{
-        cout << "pas de collision" << endl;
-        detect = false;
+        if(dist > 0) {
+            detect = false;
+        }
    }
-
-
 
 
 
